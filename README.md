@@ -1,4 +1,8 @@
-# Useful commands
+# CDK Msg App Backend
+
+http://aws-msg-app.ws.kabits.com
+
+## Useful commands
 
  * `npm run build`   compile typescript to js
  * `npm run watch`   watch for changes and compile
