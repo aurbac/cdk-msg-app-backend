@@ -24,6 +24,7 @@ export class CdkMsgAppBackendStack extends cdk.Stack {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
     });
+    new cdk.CfnOutput(this, 'TableName', { value: table.tableName });
     
     const vpc = new ec2.Vpc(this, "My-Vpc", {
       cidr: "10.1.0.0/16",
