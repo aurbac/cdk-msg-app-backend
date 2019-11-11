@@ -1,18 +1,12 @@
 import cdk = require('@aws-cdk/core');
 import dynamodb = require("@aws-cdk/aws-dynamodb");
-
 import ec2 = require("@aws-cdk/aws-ec2");
-
 import ecr = require("@aws-cdk/aws-ecr");
-
 import ecs = require("@aws-cdk/aws-ecs");
 import iam = require("@aws-cdk/aws-iam");
-
 import ecs_patterns = require("@aws-cdk/aws-ecs-patterns");
 import elbv2 = require('@aws-cdk/aws-elasticloadbalancingv2');
-
 import codecommit = require('@aws-cdk/aws-codecommit');
-
 import codebuild = require('@aws-cdk/aws-codebuild');
 import codepipeline = require('@aws-cdk/aws-codepipeline');
 import codepipeline_actions = require('@aws-cdk/aws-codepipeline-actions');
@@ -35,7 +29,7 @@ export class CdkMsgAppBackendStack extends cdk.Stack {
     });
     new cdk.CfnOutput(this, 'TableName', { value: table.tableName });
     
-    const vpc = new ec2.Vpc(this, "My-Vpc", {
+    const vpc = new ec2.Vpc(this, "workshop-vpc", {
       cidr: "10.1.0.0/16",
       natGateways: 1,
       subnetConfiguration: [
@@ -45,10 +39,9 @@ export class CdkMsgAppBackendStack extends cdk.Stack {
       maxAzs: 3 // Default is all AZs in region
     });
     
-    const repository = new ecr.Repository(this, "Api", {
-      repositoryName: "my-api"
-    });    
-    
+    const repository = new ecr.Repository(this, "workshop-api", {
+      repositoryName: "workshop-api"
+    });
     
     const cluster = new ecs.Cluster(this, "MyCluster", {
       vpc: vpc
@@ -74,7 +67,7 @@ export class CdkMsgAppBackendStack extends cdk.Stack {
     fargateTaskDefinition.addToExecutionRolePolicy(executionRolePolicy);
     fargateTaskDefinition.addToTaskRolePolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
-      resources: ['*'],
+      resources: [table.tableArn],
       actions: ['dynamodb:*']
     }));
 
@@ -158,7 +151,7 @@ export class CdkMsgAppBackendStack extends cdk.Stack {
             ]
     });
     project.addToRolePolicy(buildRolePolicy);
-    
+
     const sourceOutput = new codepipeline.Artifact();
     const buildOutput = new codepipeline.Artifact();
     const sourceAction = new codepipeline_actions.CodeCommitSourceAction({
@@ -172,7 +165,7 @@ export class CdkMsgAppBackendStack extends cdk.Stack {
       input: sourceOutput,
       outputs: [buildOutput],
     });
-    
+
     new codepipeline.Pipeline(this, 'MyPipeline', {
       stages: [
         {
@@ -196,7 +189,6 @@ export class CdkMsgAppBackendStack extends cdk.Stack {
         }
       ],
     });
-    
     
   }
 }
